@@ -6,9 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "llmbench"
 version = "0.1.0"
 description = "LLM API Benchmark Tool in Python"
-license = "MIT"
+license = "GPL-3.0-or-later"
 authors = [
-    {name = "Dario cargnino", email = "dario.cargnino@gmail.com"},
+    {name = "dxxc", email = ""},
 ]
 dependencies = [
     "openai>=1.0.0",
