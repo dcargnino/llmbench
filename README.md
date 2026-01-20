@@ -1,147 +1,170 @@
-# LLM API Benchmark Tool
+# LLM Benchmark Tool
 
-## Overview
+A comprehensive Python tool for benchmarking Large Language Model (LLM) APIs. This tool measures key performance metrics including generation speed, prompt throughput, time to first token (TTFT), and success rates across different concurrency levels.
 
-The LLM API Benchmark Tool is a flexible Go-based utility designed to measure and analyze the performance of OpenAI-compatible API endpoints across different concurrency levels. This tool provides in-depth insights into API throughput, generation speed, and token processing capabilities.
+## Features
 
-## Key Features
+- **Concurrent API Testing**: Test multiple concurrency levels simultaneously
+- **Comprehensive Metrics**: Measure generation speed, prompt throughput, TTFT, and success rates
+- **Multiple Output Formats**: Support for console tables, JSON, and YAML output
+- **Flexible Configuration**: Custom prompts or auto-generated random prompts
+- **Network Latency Measurement**: Built-in latency testing to API endpoints
+- **Rich Console Output**: Beautiful tables and progress indicators
 
-- 🚀 Dynamic Concurrency Testing
-- 📊 Comprehensive Performance Metrics
-- 🔍 Flexible Configuration
-- 📝 Markdown Result Reporting
-- 🌐 Compatible with Any OpenAI-Like API
-- 📏 Arbitrary Length Dynamic Input Prompt
+## Installation
 
-## Performance Metrics Measured
+### Prerequisites
 
-1. **Generation Throughput**
-   - Measures tokens generated per second
-   - Calculates across multiple concurrency levels
+- Python 3.11 or higher
+- pip package manager
 
-2. **Prompt Throughput**
-   - Analyzes input token processing speed
-   - Helps understand API's prompt handling efficiency
+### Install from Source
 
-3. **Time to First Token (TTFT)**
-   - Measures initial response latency
-   - Provides both minimum and maximum TTFT
-   - Critical for understanding real-time responsiveness
-
-## Example Output
-```
-Input Tokens: 45
-Output Tokens: 512
-Test Model: Qwen2.5-7B-Instruct-AWQ
-Latency: 2.20 ms
+```bash
+git clone <repository-url>
+cd llmbench
+pip install -e .
 ```
 
-| Concurrency | Generation Throughput (tokens/s) |  Prompt Throughput (tokens/s) | Min TTFT (s) | Max TTFT (s) |
-|-------------|----------------------------------|-------------------------------|--------------|--------------|
-|           1 |                            58.49 |                        846.81 |         0.05 |         0.05 |
-|           2 |                           114.09 |                        989.94 |         0.08 |         0.09 |
-|           4 |                           222.62 |                       1193.99 |         0.11 |         0.15 |
-|           8 |                           414.35 |                       1479.76 |         0.11 |         0.24 |
-|          16 |                           752.26 |                       1543.29 |         0.13 |         0.47 |
-|          32 |                           653.94 |                       1625.07 |         0.14 |         0.89 |
+### Development Installation
 
+```bash
+pip install -e ".[dev]"
+```
 
 ## Usage
-### [Quick Start Guide](https://pikoo.de/posts/llm_api_performance_evaluation_tool_guide/)
 
-### Minimal Configuration
+### Basic Usage
 
-**Linux:**
 ```bash
-./llmapibenchmark_linux_amd64 --base-url https://your-api-endpoint.com/v1
+llmbench --base-url https://api.openai.com/v1 --api-key sk-your-key-here
 ```
 
-**Windows:**
-```cmd
-llmapibenchmark_windows_amd64.exe --base-url https://your-api-endpoint.com/v1
-```
+### Advanced Usage
 
-### Full Configuration
-
-**Linux:**
 ```bash
-./llmapibenchmark_linux_amd64 \
-  --base-url https://your-api-endpoint.com/v1 \
-  --api-key YOUR_API_KEY \
-  --model gpt-3.5-turbo \
-  --concurrency 1,2,4,8,16 \
+llmbench \
+  --base-url https://api.example.com/v1 \
+  --api-key sk-your-key \
+  --model gpt-4 \
+  --concurrency 1,2,4,8 \
   --max-tokens 512 \
-  --num-words 513 \
-  --prompt "Your custom prompt here" \
+  --prompt "Write a short story about AI" \
   --format json
 ```
 
-**Windows:**
-```cmd
-llmapibenchmark_windows_amd64.exe ^
-  --base-url https://your-api-endpoint.com/v1 ^
-  --api-key YOUR_API_KEY ^
-  --model gpt-3.5-turbo ^
-  --concurrency 1,2,4,8,16 ^
-  --max-tokens 512 ^
-  --num-words 513 ^
-  --prompt "Your custom prompt here" ^
-  --format json
+### Command Line Options
+
+- `--base-url`: API endpoint base URL (required)
+- `--api-key`: API authentication key
+- `--model`: Model name (auto-discovered if not provided)
+- `--concurrency`: Comma-separated concurrency levels (default: 1)
+- `--max-tokens`: Maximum tokens to generate (default: 512)
+- `--prompt`: Custom prompt text
+- `--num-words`: Number of random words for prompt generation (default: 100)
+- `--format`: Output format (json, yaml, or console table)
+
+## Output Metrics
+
+### Generation Speed
+Tokens generated per second, calculated as total output tokens divided by response time minus network latency.
+
+### Prompt Throughput
+Tokens processed per second for input prompts, measured from request start to first token.
+
+### Time to First Token (TTFT)
+Time from request initiation to receiving the first token, in seconds.
+
+### Success Rate
+Percentage of successful API calls out of total attempts.
+
+## Output Formats
+
+### Console (Default)
+Rich-formatted table with summary information and detailed metrics per concurrency level.
+
+### JSON
+Structured JSON output containing all benchmark data.
+
+### YAML
+Human-readable YAML format with complete results.
+
+All formats automatically save a Markdown file (`benchmark_results.md`) with the results.
+
+## Architecture
+
+The tool is organized into the following modules:
+
+- `cli/`: Command-line interface and output formatting
+- `core/api/`: API client and prompt generation utilities
+- `core/utils/`: Performance measurement utilities
+- `core/`: Constants and exception definitions
+
+## Development
+
+### Running Tests
+
+```bash
+pytest
 ```
 
-## Command-Line Parameters
+### Code Quality
 
-| Parameter | Short | Description | Default | Required |
-|---|---|---|---|---|
-| `--base-url` | `-u` | Base URL for LLM API endpoint | Empty (MUST be specified) | Yes |
-| `--api-key` | `-k` | API authentication key | None | No |
-| `--model` | `-m` | Specific AI model to test | Automatically discovers first available model | No |
-| `--concurrency` | `-c` | Comma-separated concurrency levels to test | `1,2,4,8,16,32,64,128` | No |
-| `--max-tokens` | `-t` | Maximum tokens to generate per request | `512` | No |
-| `--num-words` | `-n` | Number of words for random input prompt | `0` | No |
-| `--prompt` | `-p` | Text prompt for generating responses | A long story | No |
-| `--format` | `-f` | Output format (json, yaml) | `""` | No |
-| `--help` | `-h` | Show help message | `false` | No |
+```bash
+# Format code
+black src/
 
-## Output
+# Lint code
+ruff check src/
 
-The tool provides output in multiple formats, controlled by the `--format` flag.
+# Type checking
+mypy src/
+```
 
-### Default (CLI Table and Markdown File)
+### Project Structure
 
-If no format is specified, the tool generates:
-1.  **Real-time console results**: A table is displayed in the terminal with live updates.
-2.  **Markdown file**: A detailed report is saved to `API_Throughput_{ModelName}.md`.
+```
+llmbench/
+├── src/
+│   ├── cli/
+│   │   ├── main.py          # CLI entry point
+│   │   ├── models.py        # Data models
+│   │   ├── benchmark.py     # Benchmark orchestration
+│   │   └── formatters.py    # Output formatting
+│   └── core/
+│       ├── api/
+│       │   ├── client.py    # OpenAI API client
+│       │   └── prompts.py   # Prompt generation
+│       ├── utils/
+│       │   ├── latency.py   # Network latency measurement
+│       │   └── speed.py     # Performance metrics
+│       ├── constants.py     # Application constants
+│       └── exceptions.py    # Custom exceptions
+├── tests/                   # Unit tests
+├── pyproject.toml          # Project configuration
+└── README.md              # This file
+```
 
-**Markdown File Columns:**
-- **Concurrency**: Number of concurrent requests
-- **Generation Throughput**: Tokens generated per second
-- **Prompt Throughput**: Input token processing speed
-- **Min TTFT**: Minimum time to first token
-- **Max TTFT**: Maximum time to first token
+## API Compatibility
 
-### JSON Output (`--format json`)
+This tool is designed to work with OpenAI-compatible APIs. It has been tested with:
 
-When using the `--format json` flag, the results are printed to the console in JSON format.
+- OpenAI API
+- Compatible local LLM servers (e.g., vLLM, Ollama with OpenAI compatibility)
 
-### YAML Output (`--format yaml`)
+## Contributing
 
-When using the `--format yaml` flag, the results are printed to the console in YAML format.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
 
-## Best Practices
+## License
 
-- Test with various prompt lengths and complexities
-- Compare different models
-- Monitor for consistent performance
-- Be mindful of API rate limits
-- Use `-numWords` to control input length
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Limitations
+## Support
 
-- Requires active API connection
-- Results may vary based on network conditions
-- Does not simulate real-world complex scenarios
-
-## Disclaimer
-
-This tool is for performance analysis and should be used responsibly in compliance with API provider's usage policies.
+For issues, questions, or contributions, please open an issue on the GitHub repository.
